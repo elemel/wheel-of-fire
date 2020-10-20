@@ -5,6 +5,7 @@ function love.load(arg)
 
   love.window.setMode(800, 600, {
     -- fullscreen = true,
+    highdpi = true,
     resizable = true,
   })
 

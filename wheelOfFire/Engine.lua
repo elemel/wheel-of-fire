@@ -1,6 +1,8 @@
 local Camera = require("wheelOfFire.Camera")
 local Class = require("wheelOfFire.Class")
+local Hamster = require("wheelOfFire.Hamster")
 local HamsterWheel = require("wheelOfFire.HamsterWheel")
+local Player = require("wheelOfFire.Player")
 local Wall = require("wheelOfFire.Wall")
 
 local M = Class.new()
@@ -12,14 +14,15 @@ function M:init(resources, config)
 
   self.world = love.physics.newWorld(0, 16)
 
-  self.interpolatedTransforms = {}
   self.cameras = {}
+  self.hamsters = {}
   self.hamsterWheels = {}
+  self.players = {}
 
   local viewportWidth, viewportHeight = love.graphics.getDimensions()
 
   Camera.new(self, {
-    scale = 1 / 16,
+    scale = 3 / 32,
 
     viewport = {
       x = 0,
@@ -32,10 +35,13 @@ function M:init(resources, config)
 
   Wall.new(self, {
     x = 0, y = 4,
-    width = 8, height = 0.5,
+    angle = 1 / 64 * math.pi,
+    width = 16, height = 0.5,
   })
 
-  HamsterWheel.new(self, {})
+  hamsterWheel = HamsterWheel.new(self, {})
+  hamster = Hamster.new(hamsterWheel, {})
+  Player.new(hamster, {})
 end
 
 function M:update(dt)
@@ -45,22 +51,14 @@ function M:update(dt)
     self.accumulatedDt = self.accumulatedDt - self.fixedDt
     self:fixedUpdate(self.fixedDt)
   end
-
-  for _, transform in ipairs(self.interpolatedTransforms) do
-    transform:updateInterpolatedTransform(dt)
-  end
 end
 
 function M:fixedUpdate(dt)
-  for _, transform in ipairs(self.interpolatedTransforms) do
-    transform:fixedUpdatePreviousTransform(dt)
+  for _, player in ipairs(self.players) do
+    player:fixedUpdateInput(dt)
   end
 
   self.world:update(dt)
-
-  for _, transform in ipairs(self.interpolatedTransforms) do
-    transform:fixedUpdateTransform(dt)
-  end
 end
 
 function M:draw()
