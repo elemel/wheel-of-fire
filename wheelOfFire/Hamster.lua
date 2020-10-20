@@ -23,17 +23,22 @@ function M:init(hamsterWheel, config)
   self.jumpInput = false
   self.previousJumpInput = self.jumpInput
 
+  local x1, y1 = self.body:getPosition()
+  local x2, y2 = self.hamsterWheel.body:getPosition()
+  self.ropeJoint = love.physics.newRopeJoint(self.body, self.hamsterWheel.body, x1, y1, x2, y2, 0.25)
+
   self.directionX = 1
-  self:createJoint()
+  self:createWheelJoint()
 
   insert(self.engine.hamsters, self)
 end
 
 function M:destroy()
   removeLast(self.engine.hamsters, self)
+  self:destroyWheelJoint()
 
-  self.joint:destroy()
-  self.joint = nil
+  self.ropeJoint:destroy()
+  self.ropeJoint = nil
 
   self.fixture:destroy()
   self.fixture = nil
@@ -44,26 +49,32 @@ end
 
 function M:fixedUpdateControl(dt)
   if self.jumpInput and not self.previousJumpInput then
-    self.joint:destroy()
-    self.joint = nil
-
+    self:destroyWheelJoint()
     self.directionX = -self.directionX
-    self:createJoint()
+    self:createWheelJoint()
   end
 
-  self.joint:setMotorSpeed(-self.inputX * 8)
+  self.wheelJoint:setMotorSpeed(self.inputX * 8)
 end
 
-function M:createJoint()
-  local x1, y1 = self.hamsterWheel.body:getPosition()
-  local x2, y2 = self.body:getWorldPoint(0, -self.directionX * 0.25)
+function M:createWheelJoint()
+  local x1, y1 = self.body:getWorldPoint(0, -self.directionX * 0.25)
+  local x2, y2 = self.hamsterWheel.body:getPosition()
+  local axisX, axisY = self.body:getWorldVector(0, -self.directionX)
 
-  self.joint = love.physics.newRevoluteJoint(
-    self.hamsterWheel.body, self.body, x1, y1, x2, y2)
+  self.wheelJoint = love.physics.newWheelJoint(
+    self.body, self.hamsterWheel.body, x1, y1, x2, y2, axisX, axisY)
 
-  self.joint:setMotorEnabled(true)
-  self.joint:setMaxMotorTorque(0.5)
-  self.joint:setMotorSpeed(-self.inputX * 8)
+  self.wheelJoint:setMotorEnabled(true)
+  self.wheelJoint:setMaxMotorTorque(0.5)
+  self.wheelJoint:setMotorSpeed(self.inputX * 8)
+
+  self.wheelJoint:setSpringFrequency(8)
+end
+
+function M:destroyWheelJoint()
+  self.wheelJoint:destroy()
+  self.wheelJoint = nil
 end
 
 return M
