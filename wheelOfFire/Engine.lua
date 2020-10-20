@@ -58,6 +58,10 @@ function M:fixedUpdate(dt)
     player:fixedUpdateInput(dt)
   end
 
+  for _, hamster in ipairs(self.hamsters) do
+    hamster:fixedUpdateControl(dt)
+  end
+
   self.world:update(dt)
 end
 
@@ -98,7 +102,9 @@ function M:debugDrawFixtures()
 
         local vertexCount = shape:getVertexCount()
 
-        local previousX, previousY = body:getWorldPoint(shape:getPreviousVertex())
+        local previousX, previousY = body:getWorldPoint(
+          shape:getPreviousVertex())
+
         local firstX, firstY = body:getWorldPoint(shape:getPoint(1))
 
         local lastX, lastY = body:getWorldPoint(shape:getPoint(vertexCount))
@@ -111,7 +117,9 @@ function M:debugDrawFixtures()
         local radius = shape:getRadius()
         love.graphics.circle("line", x, y, radius)
         local directionX, directionY = body:getWorldVector(1, 0)
-        love.graphics.line(x, y, x + directionX * radius, y + directionY * radius)
+
+        love.graphics.line(
+          x, y, x + directionX * radius, y + directionY * radius)
       elseif shapeType == "polygon" then
         love.graphics.polygon("line", body:getWorldPoints(shape:getPoints()))
       end

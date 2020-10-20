@@ -1,6 +1,7 @@
 local abs = math.abs
 local pi = math.pi
 local remove = table.remove
+local sqrt = math.sqrt
 
 local M = {}
 
@@ -103,6 +104,10 @@ local function mixScale3(
   return x, y, z
 end
 
+local function length2(x, y)
+  return sqrt(x * x + y * y)
+end
+
 local function find(t, v)
   for k, v2 in pairs(t) do
     if v2 == v then
@@ -144,6 +149,7 @@ end
 M.find = find
 M.findFirst = findFirst
 M.findLast = findLast
+M.length2 = length2
 M.mix = mix
 M.mix2 = mix2
 M.mix3 = mix3
