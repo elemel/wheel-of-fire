@@ -19,6 +19,8 @@ function M:init(resources, config)
   local viewportWidth, viewportHeight = love.graphics.getDimensions()
 
   Camera.new(self, {
+    scale = 1 / 16,
+
     viewport = {
       x = 0,
       y = 0,
@@ -64,9 +66,19 @@ end
 function M:draw()
   for _, camera in ipairs(self.cameras) do
     love.graphics.push("all")
-    love.graphics.replaceTransform(camera.worldToScreen)
-    local scale = camera.viewport.height * (1 / 8)
+
+    local viewport = camera.viewport
+
+    love.graphics.setScissor(
+      viewport.x, viewport.y, viewport.width, viewport.height)
+
+    love.graphics.translate(
+      viewport.x + 0.5 * viewport.width, viewport.y + 0.5 * viewport.height)
+
+    local scale = viewport.height * camera.scale
+    love.graphics.scale(scale)
     love.graphics.setLineWidth(1 / scale)
+
     self:debugDrawFixtures()
     love.graphics.pop()
   end
