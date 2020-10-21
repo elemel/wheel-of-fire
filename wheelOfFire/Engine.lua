@@ -24,7 +24,7 @@ function M:init(resources, config)
   local viewportWidth, viewportHeight = love.graphics.getDimensions()
 
   Camera.new(self, {
-    scale = 3 / 32,
+    scale = 1 / 16,
 
     viewport = {
       x = 0,
@@ -36,8 +36,8 @@ function M:init(resources, config)
   })
 
   Wall.new(self, {
-    x = 0, y = 4,
-    angle = 1 / 64 * math.pi,
+    x = 0, y = 2,
+    angle = 1 / 16 * math.pi,
     width = 16, height = 0.5,
   })
 
@@ -84,6 +84,8 @@ function M:draw()
     love.graphics.setLineWidth(1 / scale)
 
     self:debugDrawFixtures()
+    -- self:debugDrawHamsters()
+
     love.graphics.pop()
   end
 end
@@ -126,6 +128,23 @@ function M:debugDrawFixtures()
         love.graphics.polygon("line", body:getWorldPoints(shape:getPoints()))
       end
     end
+  end
+
+  love.graphics.pop()
+end
+
+function M:debugDrawHamsters()
+  love.graphics.push("all")
+
+  for _, hamster in ipairs(self.hamsters) do
+    local ax, ay, bx, by = hamster.wheelJoint:getAnchors()
+    local axisX, axisY = hamster.wheelJoint:getAxis()
+
+    love.graphics.setColor(1, 1, 0, 1)
+    love.graphics.line(ax, ay, ax + axisX, ay + axisY)
+
+    love.graphics.setColor(0, 0.5, 1, 1)
+    love.graphics.line(ax, ay, ax + hamster.moveInputX, ay + hamster.moveInputY)
   end
 
   love.graphics.pop()

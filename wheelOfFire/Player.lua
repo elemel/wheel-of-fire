@@ -21,7 +21,7 @@ function M:fixedUpdateInput(dt)
   self.hamster.previousJumpInput = self.hamster.jumpInput
   self.hamster.previousFireInput = self.hamster.fireInput
 
-  self.hamster.inputX, self.hamster.inputY = self.inputDevice:getMoveInput()
+  self.hamster.moveInputX, self.hamster.moveInputY = self.inputDevice:getMoveInput()
 
   self.hamster.jumpInput = self.inputDevice:getJumpInput()
   self.hamster.fireInput = self.inputDevice:getFireInput()

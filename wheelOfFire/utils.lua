@@ -146,6 +146,11 @@ local function removeLast(t, v)
   end
 end
 
+local function dot2(ax, ay, bx, by)
+  return ax * bx + ay * by
+end
+
+M.dot2 = dot2
 M.find = find
 M.findFirst = findFirst
 M.findLast = findLast
