@@ -2,6 +2,7 @@ local Camera = require("wheelOfFire.Camera")
 local Class = require("wheelOfFire.Class")
 local Hamster = require("wheelOfFire.Hamster")
 local HamsterWheel = require("wheelOfFire.HamsterWheel")
+local KeyboardDevice = require("wheelOfFire.KeyboardDevice")
 local Player = require("wheelOfFire.Player")
 local Wall = require("wheelOfFire.Wall")
 
@@ -17,6 +18,7 @@ function M:init(resources, config)
   self.cameras = {}
   self.hamsters = {}
   self.hamsterWheels = {}
+  self.keyboardDevices = {}
   self.players = {}
 
   local viewportWidth, viewportHeight = love.graphics.getDimensions()
@@ -40,8 +42,9 @@ function M:init(resources, config)
   })
 
   hamsterWheel = HamsterWheel.new(self, {})
-  hamster = Hamster.new(hamsterWheel, {})
-  Player.new(hamster, {})
+  keyboardDevice = KeyboardDevice.new(self, {})
+  hamster = Hamster.new(self, hamsterWheel, {})
+  Player.new(self, hamster, keyboardDevice, {})
 end
 
 function M:update(dt)
@@ -68,7 +71,6 @@ end
 function M:draw()
   for _, camera in ipairs(self.cameras) do
     love.graphics.push("all")
-
     local viewport = camera.viewport
 
     love.graphics.setScissor(
