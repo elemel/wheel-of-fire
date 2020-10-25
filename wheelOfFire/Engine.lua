@@ -7,6 +7,12 @@ local Player = require("wheelOfFire.Player")
 local utils = require("wheelOfFire.utils")
 local Wall = require("wheelOfFire.Wall")
 
+local decompose2 = utils.decompose2
+local insertionSort = utils.insertionSort
+local mix2 = utils.mix2
+local mixAngle = utils.mixAngle
+local mixScale2 = utils.mixScale2
+
 local M = Class.new()
 
 function M:init(resources, config)
@@ -17,6 +23,10 @@ function M:init(resources, config)
   self.fixedTime = 0
 
   self.world = love.physics.newWorld(0, 16)
+
+  self.bones = {}
+  self.dirtyTransformBones = {}
+  self.dirtyPreviousTransformBones = {}
 
   self.cameras = {}
   self.hamsters = {}
@@ -58,9 +68,26 @@ function M:update(dt)
     self.accumulatedDt = self.accumulatedDt - self.fixedDt
     self:fixedUpdate(self.fixedDt)
   end
+
+  local t = self.accumulatedDt / self.fixedDt
+
+  for _, bone in ipairs(self.dirtyPreviousTransformBones) do
+    local x1, y1, angle1, scaleX1, scaleY1 = decompose2(bone.previousTransform)
+    local x2, y2, angle2, scaleX2, scaleY2 = decompose2(bone.transform)
+
+    local x, y = mix2(x1, y1, x2, y2, t)
+    local angle = mixAngle(angle1, angle2, t)
+    local scaleX, scaleY = mixScale2(scaleX1, scaleY1, scaleX2, scaleY2, t)
+
+    bone.interpolatedTransform:setTransformation(x, y, angle, scaleX, scaleY)
+  end
 end
 
 function M:fixedUpdate(dt)
+  for i = #self.dirtyPreviousTransformBones, 1, -1 do
+    self.dirtyPreviousTransformBones[i]:setPreviousTransformDirty(false)
+  end
+
   for _, player in ipairs(self.players) do
     player:fixedUpdateInput(dt)
   end
@@ -70,6 +97,14 @@ function M:fixedUpdate(dt)
   end
 
   self.world:update(dt)
+
+  for _, hamster in ipairs(self.hamsters) do
+    hamster:fixedUpdateAnimation(dt)
+  end
+
+  while #self.dirtyTransformBones >= 1 do
+    self.dirtyTransformBones[#self.dirtyTransformBones]:setTransformDirty(false)
+  end
 end
 
 function lessZ(a, b)
@@ -77,7 +112,7 @@ function lessZ(a, b)
 end
 
 function M:draw()
-  utils.insertionSort(self.sprites, lessZ)
+  insertionSort(self.sprites, lessZ)
 
   for _, camera in ipairs(self.cameras) do
     love.graphics.push("all")

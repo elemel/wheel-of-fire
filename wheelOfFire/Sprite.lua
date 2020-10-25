@@ -17,6 +17,10 @@ end
 
 function M:destroy()
   removeLast(self.engine.sprites, self)
+
+  self.transform = nil
+  self.drawable = nil
+  self.engine = nil
 end
 
 return M

@@ -1,3 +1,4 @@
+local Bone = require("wheelOfFire.Bone")
 local Class = require("wheelOfFire.Class")
 local Sprite = require("wheelOfFire.Sprite")
 local utils = require("wheelOfFire.utils")
@@ -38,9 +39,12 @@ function M:init(engine, hamsterWheel, config)
   self.directionX = 1
   self:createWheelJoint()
 
+  local transform = love.math.newTransform(x, y)
+  self.bone = Bone.new(self.engine, nil, transform)
+  self.spriteBone = Bone.new(self.engine, self.bone, love.math.newTransform(0, 0, 0, 1 / 256))
+
   local image = self.engine.resources.images.hamster
-  local transform = love.math.newTransform():scale(1 / 256)
-  self.sprite = Sprite.new(self.engine, image, transform)
+  self.sprite = Sprite.new(self.engine, image, self.spriteBone.interpolatedTransform)
 
   insert(self.engine.hamsters, self)
 end
@@ -83,6 +87,14 @@ function M:fixedUpdateControl(dt)
 
   local motorSpeed = -16 * dot2(self.moveInputX, self.moveInputY, tangentX, tangentY)
   self.wheelJoint:setMotorSpeed(motorSpeed)
+end
+
+function M:fixedUpdateAnimation(dt)
+  local x, y = self.body:getPosition()
+  local angle = self.body:getAngle()
+
+  self.bone.localTransform:setTransformation(x, y, angle)
+  self.bone:setTransformDirty(true)
 end
 
 function M:createWheelJoint()
