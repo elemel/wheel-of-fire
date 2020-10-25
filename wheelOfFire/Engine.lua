@@ -9,6 +9,8 @@ local Wall = require("wheelOfFire.Wall")
 local M = Class.new()
 
 function M:init(resources, config)
+  self.resources = assert(resources)
+
   self.fixedDt = config.fixedDt or 1 / 60
   self.accumulatedDt = 0
   self.fixedTime = 0
@@ -20,6 +22,7 @@ function M:init(resources, config)
   self.hamsterWheels = {}
   self.keyboardDevices = {}
   self.players = {}
+  self.sprites = {}
 
   local viewportWidth, viewportHeight = love.graphics.getDimensions()
 
@@ -82,6 +85,10 @@ function M:draw()
     local scale = viewport.height * camera.scale
     love.graphics.scale(scale)
     love.graphics.setLineWidth(1 / scale)
+
+    for _, sprite in ipairs(self.sprites) do
+      love.graphics.draw(sprite.drawable, sprite.transform)
+    end
 
     self:debugDrawFixtures()
     -- self:debugDrawHamsters()

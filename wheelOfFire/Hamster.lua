@@ -1,4 +1,5 @@
 local Class = require("wheelOfFire.Class")
+local Sprite = require("wheelOfFire.Sprite")
 local utils = require("wheelOfFire.utils")
 
 local dot2 = utils.dot2
@@ -37,11 +38,19 @@ function M:init(engine, hamsterWheel, config)
   self.directionX = 1
   self:createWheelJoint()
 
+  local image = self.engine.resources.images.hamster
+  local transform = love.math.newTransform():scale(1 / 256)
+  self.sprite = Sprite.new(self.engine, image, transform)
+
   insert(self.engine.hamsters, self)
 end
 
 function M:destroy()
   removeLast(self.engine.hamsters, self)
+
+  self.sprite:destroy()
+  self.sprite = nil
+
   self:destroyWheelJoint()
 
   self.ropeJoint:destroy()

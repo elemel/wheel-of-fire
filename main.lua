@@ -11,7 +11,12 @@ function love.load(arg)
 
   love.physics.setMeter(1)
 
-  resources = {}
+  resources = {
+    images = {
+      hamster = love.graphics.newImage("resources/images/hamster.png"),
+    }
+  }
+
   engine = Engine.new(resources, {})
 end
 
