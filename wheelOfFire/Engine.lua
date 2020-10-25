@@ -37,7 +37,7 @@ function M:init(resources, config)
 
   Wall.new(self, {
     x = 0, y = 2,
-    angle = 1 / 16 * math.pi,
+    angle = 1 / 8 * math.pi,
     width = 16, height = 0.5,
   })
 
