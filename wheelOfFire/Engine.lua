@@ -7,11 +7,11 @@ local Player = require("wheelOfFire.Player")
 local utils = require("wheelOfFire.utils")
 local Wall = require("wheelOfFire.Wall")
 
-local decompose2 = utils.decompose2
 local insertionSort = utils.insertionSort
 local mix2 = utils.mix2
 local mixAngle = utils.mixAngle
 local mixScale2 = utils.mixScale2
+local mixTransform = utils.mixTransform
 
 local M = Class.new()
 
@@ -72,14 +72,8 @@ function M:update(dt)
   local t = self.accumulatedDt / self.fixedDt
 
   for _, bone in ipairs(self.dirtyPreviousTransformBones) do
-    local x1, y1, angle1, scaleX1, scaleY1 = decompose2(bone.previousTransform)
-    local x2, y2, angle2, scaleX2, scaleY2 = decompose2(bone.transform)
-
-    local x, y = mix2(x1, y1, x2, y2, t)
-    local angle = mixAngle(angle1, angle2, t)
-    local scaleX, scaleY = mixScale2(scaleX1, scaleY1, scaleX2, scaleY2, t)
-
-    bone.interpolatedTransform:setTransformation(x, y, angle, scaleX, scaleY)
+    mixTransform(
+      bone.previousTransform, bone.transform, t, bone.interpolatedTransform)
   end
 end
 
