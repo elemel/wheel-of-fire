@@ -174,9 +174,12 @@ local function decompose2(transform)
 
   local x = t14
   local y = t24
+
   local angle = 0
+
   local scaleX = t11 * t11 + t21 * t21
   local scaleY = t12 * t12 + t22 * t22
+
   local shearX = 0
   local shearY = 0
 

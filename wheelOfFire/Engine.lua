@@ -38,7 +38,7 @@ function M:init(resources, config)
   local viewportWidth, viewportHeight = love.graphics.getDimensions()
 
   Camera.new(self, {
-    scale = 1 / 16,
+    scale = 1 / 8,
 
     viewport = {
       x = 0,
@@ -51,7 +51,7 @@ function M:init(resources, config)
 
   Wall.new(self, {
     x = 0, y = 2,
-    angle = 1 / 8 * math.pi,
+    angle = 1 / 16 * math.pi,
     width = 16, height = 0.5,
   })
 

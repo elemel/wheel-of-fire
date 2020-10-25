@@ -15,7 +15,7 @@ function M:init(engine, hamsterWheel, config)
 
   local x, y = self.hamsterWheel.body:getPosition()
   self.body = love.physics.newBody(self.engine.world, x, y, "dynamic")
-  self.body:setAngularDamping(16)
+  self.body:setAngularDamping(32)
 
   local shape = love.physics.newCircleShape(config.radius or 0.25)
   self.fixture = love.physics.newFixture(self.body, shape, config.density or 1)
@@ -34,17 +34,17 @@ function M:init(engine, hamsterWheel, config)
   local x2, y2 = self.hamsterWheel.body:getPosition()
 
   self.ropeJoint = love.physics.newRopeJoint(
-    self.body, self.hamsterWheel.body, x1, y1, x2, y2, 0.375)
+    self.body, self.hamsterWheel.body, x1, y1, x2, y2, 0.25)
 
-  self.directionX = 1
+  self.directionY = 1
   self:createWheelJoint()
 
-  local transform = love.math.newTransform(x, y)
-  self.bone = Bone.new(self.engine, nil, transform)
-  self.spriteBone = Bone.new(self.engine, self.bone, love.math.newTransform(0, 0, 0, 1 / 256))
+  self.bone = Bone.new(self.engine, nil, love.math.newTransform(x, y))
+  self.spriteBone = Bone.new(self.engine, self.bone, love.math.newTransform())
 
   local image = self.engine.resources.images.hamster
   self.sprite = Sprite.new(self.engine, image, self.spriteBone.interpolatedTransform)
+  self:resetSpriteBone()
 
   insert(self.engine.hamsters, self)
 end
@@ -70,8 +70,9 @@ end
 function M:fixedUpdateControl(dt)
   if self.jumpInput and not self.previousJumpInput then
     self:destroyWheelJoint()
-    self.directionX = -self.directionX
+    self.directionY = -self.directionY
     self:createWheelJoint()
+    self:resetSpriteBone()
   end
 
   if self.fireInput and not self.previousFireInput then
@@ -98,9 +99,9 @@ function M:fixedUpdateAnimation(dt)
 end
 
 function M:createWheelJoint()
-  local x1, y1 = self.body:getWorldPoint(0, -self.directionX * 0.375)
+  local x1, y1 = self.body:getWorldPoint(0, -self.directionY * 0.25)
   local x2, y2 = self.hamsterWheel.body:getPosition()
-  local axisX, axisY = self.body:getWorldVector(0, -self.directionX)
+  local axisX, axisY = self.body:getWorldVector(0, -self.directionY)
 
   self.wheelJoint = love.physics.newWheelJoint(
     self.body, self.hamsterWheel.body, x1, y1, x2, y2, axisX, axisY)
@@ -114,6 +115,23 @@ end
 function M:destroyWheelJoint()
   self.wheelJoint:destroy()
   self.wheelJoint = nil
+end
+
+function M:resetSpriteBone()
+  local width, height = self.sprite.drawable:getDimensions()
+
+  local scale = 1 / 1024
+
+  local scaleX = scale
+  local scaleY = self.directionY * scale
+
+  local originX = 0.5 * width
+  local originY = 0.5 * height
+
+  self.spriteBone.localTransform:setTransformation(0, 0, 0, scaleX, scaleY, originX, originY)
+  self.spriteBone:setTransformDirty(true)
+  self.spriteBone:setTransformDirty(false)
+  self.spriteBone:setPreviousTransformDirty(false)
 end
 
 return M

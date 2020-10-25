@@ -1,10 +1,11 @@
 local Engine = require("wheelOfFire.Engine")
 
 function love.load(arg)
+  love.mouse.setVisible(false)
   love.window.setTitle("Wheel of Fire")
 
   love.window.setMode(800, 600, {
-    -- fullscreen = true,
+    fullscreen = true,
     highdpi = true,
     resizable = true,
   })
