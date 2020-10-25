@@ -4,6 +4,7 @@ local Hamster = require("wheelOfFire.Hamster")
 local HamsterWheel = require("wheelOfFire.HamsterWheel")
 local KeyboardDevice = require("wheelOfFire.KeyboardDevice")
 local Player = require("wheelOfFire.Player")
+local utils = require("wheelOfFire.utils")
 local Wall = require("wheelOfFire.Wall")
 
 local M = Class.new()
@@ -71,7 +72,13 @@ function M:fixedUpdate(dt)
   self.world:update(dt)
 end
 
+function lessZ(a, b)
+  return a.z < b.z
+end
+
 function M:draw()
+  utils.insertionSort(self.sprites, lessZ)
+
   for _, camera in ipairs(self.cameras) do
     love.graphics.push("all")
     local viewport = camera.viewport

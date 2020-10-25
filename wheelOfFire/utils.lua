@@ -150,10 +150,29 @@ local function dot2(ax, ay, bx, by)
   return ax * bx + ay * by
 end
 
+local function less(a, b)
+  return a < b
+end
+
+local function insertionSort(t, before)
+  before = before or less
+
+  for i = 2, #t do
+    for j = i, 2, -1 do
+      if not before(t[j], t[j - 1]) then
+        break
+      end
+
+      t[j], t[j - 1] = t[j - 1], t[j]
+    end
+  end
+end
+
 M.dot2 = dot2
 M.find = find
 M.findFirst = findFirst
 M.findLast = findLast
+M.insertionSort = insertionSort
 M.length2 = length2
 M.mix = mix
 M.mix2 = mix2
