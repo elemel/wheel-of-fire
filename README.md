@@ -4,6 +4,10 @@
 >
 > &mdash; The Smashing Pumpkins
 
+> *I live for the simple things*
+>
+> &mdash; Rocket Raccoon
+
 
 ## Credits
 
