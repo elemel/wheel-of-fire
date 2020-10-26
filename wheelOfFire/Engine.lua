@@ -1,3 +1,4 @@
+local BoneGraph = require("wheelOfFire.BoneGraph")
 local Camera = require("wheelOfFire.Camera")
 local Class = require("wheelOfFire.Class")
 local Hamster = require("wheelOfFire.Hamster")
@@ -23,10 +24,7 @@ function M:init(resources, config)
   self.fixedTime = 0
 
   self.world = love.physics.newWorld(0, 16)
-
-  self.bones = {}
-  self.dirtyTransformBones = {}
-  self.dirtyPreviousTransformBones = {}
+  self.boneGraph = BoneGraph.new()
 
   self.cameras = {}
   self.hamsters = {}
@@ -70,17 +68,11 @@ function M:update(dt)
   end
 
   local t = self.accumulatedDt / self.fixedDt
-
-  for _, bone in ipairs(self.dirtyPreviousTransformBones) do
-    mixTransform(
-      bone.previousTransform, bone.transform, t, bone.interpolatedTransform)
-  end
+  self.boneGraph:updateInterpolated(t)
 end
 
 function M:fixedUpdate(dt)
-  for i = #self.dirtyPreviousTransformBones, 1, -1 do
-    self.dirtyPreviousTransformBones[i]:setPreviousTransformDirty(false)
-  end
+  self.boneGraph:updatePrevious()
 
   for _, player in ipairs(self.players) do
     player:fixedUpdateInput(dt)
@@ -96,9 +88,7 @@ function M:fixedUpdate(dt)
     hamster:fixedUpdateAnimation(dt)
   end
 
-  while #self.dirtyTransformBones >= 1 do
-    self.dirtyTransformBones[#self.dirtyTransformBones]:setTransformDirty(false)
-  end
+  self.boneGraph:updateDirty()
 end
 
 function lessZ(a, b)
@@ -123,7 +113,7 @@ function M:draw()
     love.graphics.setLineWidth(1 / scale)
 
     for _, sprite in ipairs(self.sprites) do
-      love.graphics.draw(sprite.drawable, sprite.transform)
+      love.graphics.draw(sprite.drawable, sprite.localToWorld)
     end
 
     self:debugDrawFixtures()

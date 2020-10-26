@@ -15,7 +15,7 @@ function M:init(engine, hamsterWheel, config)
 
   local x, y = self.hamsterWheel.body:getPosition()
   self.body = love.physics.newBody(self.engine.world, x, y, "dynamic")
-  self.body:setAngularDamping(32)
+  self.body:setAngularDamping(16)
 
   local shape = love.physics.newCircleShape(config.radius or 0.25)
   self.fixture = love.physics.newFixture(self.body, shape, config.density or 1)
@@ -39,11 +39,16 @@ function M:init(engine, hamsterWheel, config)
   self.directionY = 1
   self:createWheelJoint()
 
-  self.bone = Bone.new(self.engine, nil, love.math.newTransform(x, y))
-  self.spriteBone = Bone.new(self.engine, self.bone, love.math.newTransform())
+  self.bone = Bone.new(self.engine.boneGraph, love.math.newTransform(x, y))
+
+  self.spriteBone = Bone.new(
+    self.engine.boneGraph, love.math.newTransform(), self.bone)
 
   local image = self.engine.resources.images.hamster
-  self.sprite = Sprite.new(self.engine, image, self.spriteBone.interpolatedTransform)
+
+  self.sprite = Sprite.new(
+    self.engine, image, self.spriteBone.interpolatedLocalToWorld)
+
   self:resetSpriteBone()
 
   insert(self.engine.hamsters, self)
@@ -86,7 +91,9 @@ function M:fixedUpdateControl(dt)
   local tangentX = axisY
   local tangentY = -axisX
 
-  local motorSpeed = -16 * dot2(self.moveInputX, self.moveInputY, tangentX, tangentY)
+  local motorSpeed = -16 * dot2(
+    self.moveInputX, self.moveInputY, tangentX, tangentY)
+
   self.wheelJoint:setMotorSpeed(motorSpeed)
 end
 
@@ -94,8 +101,8 @@ function M:fixedUpdateAnimation(dt)
   local x, y = self.body:getPosition()
   local angle = self.body:getAngle()
 
-  self.bone.localTransform:setTransformation(x, y, angle)
-  self.bone:setTransformDirty(true)
+  self.bone.localToParent:setTransformation(x, y, angle)
+  self.bone:setDirty(true)
 end
 
 function M:createWheelJoint()
@@ -128,10 +135,11 @@ function M:resetSpriteBone()
   local originX = 0.5 * width
   local originY = 0.5 * height
 
-  self.spriteBone.localTransform:setTransformation(0, 0, 0, scaleX, scaleY, originX, originY)
-  self.spriteBone:setTransformDirty(true)
-  self.spriteBone:setTransformDirty(false)
-  self.spriteBone:setPreviousTransformDirty(false)
+  self.spriteBone.localToParent:setTransformation(
+    0, 0, 0, scaleX, scaleY, originX, originY)
+
+  self.spriteBone:setDirty(true)
+  self.spriteBone:setPreviousDirty(false)
 end
 
 return M

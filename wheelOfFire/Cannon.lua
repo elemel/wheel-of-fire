@@ -20,7 +20,7 @@ end
 function M:fire()
   local x, y = self.hamsterWheel.body:getWorldPoint(0.25, 0)
   local body = love.physics.newBody(self.engine.world, x, y, "dynamic")
-  body:setGravityScale(0.5)
+  -- body:setGravityScale(0.5)
 
   local shape = love.physics.newCircleShape(0.125)
   local fixture = love.physics.newFixture(body, shape)
