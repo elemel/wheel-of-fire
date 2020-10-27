@@ -68,11 +68,11 @@ function M:update(dt)
   end
 
   local t = self.accumulatedDt / self.fixedDt
-  self.boneGraph:updateInterpolated(t)
+  self.boneGraph:updateInterpolatedTransforms(t)
 end
 
 function M:fixedUpdate(dt)
-  self.boneGraph:updatePrevious()
+  self.boneGraph:updatePreviousTransforms()
 
   for _, player in ipairs(self.players) do
     player:fixedUpdateInput(dt)
@@ -88,7 +88,7 @@ function M:fixedUpdate(dt)
     hamster:fixedUpdateAnimation(dt)
   end
 
-  self.boneGraph:updateDirty()
+  self.boneGraph:updateTransforms()
 end
 
 function lessZ(a, b)
@@ -113,7 +113,7 @@ function M:draw()
     love.graphics.setLineWidth(1 / scale)
 
     for _, sprite in ipairs(self.sprites) do
-      love.graphics.draw(sprite.drawable, sprite.localToWorld)
+      love.graphics.draw(sprite.drawable, sprite.transform)
     end
 
     self:debugDrawFixtures()

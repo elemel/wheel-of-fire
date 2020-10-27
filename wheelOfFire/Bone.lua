@@ -1,81 +1,97 @@
 local Class = require("wheelOfFire.Class")
-local utils = require("wheelOfFire.utils")
-
-local insert = table.insert
-local removeLast = utils.removeLast
 
 local M = Class.new()
 
-function M:init(boneGraph, localToParent, parent)
+function M:init(boneGraph, localTransform, parent)
   self.boneGraph = assert(boneGraph)
-  self.children = {}
+  self.childSet = {}
 
-  self.localToParent = localToParent:clone()
-  self.localToWorld = localToParent:clone()
-  self.previousLocalToWorld = localToParent:clone()
-  self.interpolatedLocalToWorld = localToParent:clone()
+  self.localTransform = localTransform:clone()
+  self.transform = localTransform:clone()
+  self.previousTransform = localTransform:clone()
+  self.interpolatedTransform = localTransform:clone()
 
-  insert(self.boneGraph.bones, self)
+  self.transformDirty = false
+  self.previousTransformDirty = false
+
+  self.boneGraph.boneSet[self] = true
   self:setParent(parent)
 end
 
 function M:destroy()
-  for i = #self.children, 1, -1 do
-    self.children[i]:setParent(nil)
+  for child in pairs(self.childSet) do
+    child:setParent(nil)
   end
 
   self:setParent(nil)
-  removeLast(self.boneGraph.bones, self)
+
+  self.boneGraph.previousTransformDirtySet[self] = nil
+  self.boneGraph.transformDirtySet[self] = nil
+  self.boneGraph.boneSet[self] = nil
 end
 
 function M:setParent(parent)
-  if parent == self.parent then
-    return
-  end
-
-  self:setDirty(false)
-
-  if self.parent then
-    removeLast(self.parent.children)
-  end
-
-  self.parent = parent
-
-  if self.parent then
-    insert(self.parent.children, self)
-  end
-
-  self:setDirty(true)
-end
-
-function M:setDirty(dirty)
-  if dirty and not self.boneGraph.boneToDirty[self] then
-    self.boneGraph.boneToDirty[self] = true
-
-    for _, child in ipairs(self.children) do
-      child:setDirty(true)
+  if parent ~= self.parent then
+    if self.parent then
+      self.parent.childSet[self] = nil
     end
-  elseif not dirty and self.boneGraph.boneToDirty[self] then
-    self.localToWorld:reset()
+
+    self.parent = parent
 
     if self.parent then
-      self.parent:setDirty(false)
-      self.localToWorld:apply(self.parent.localToWorld)
+      self.parent.childSet[self] = true
     end
 
-    self.localToWorld:apply(self.localToParent)
-    self.boneGraph.boneToDirty[self] = false
+    self:setTransformDirty(true)
   end
 end
 
-function M:setPreviousDirty(dirty)
-  assert(dirty == false)
-  self:setDirty(false)
+function M:setTransformDirty(dirty)
+  assert(type(dirty) == "boolean")
 
-  self.previousLocalToWorld:reset():apply(self.localToWorld)
-  self.interpolatedLocalToWorld:reset():apply(self.localToWorld)
+  if dirty ~= self.transformDirty then
+    if dirty then
+      self.transformDirty = true
+      self.boneGraph.transformDirtySet[self] = true
 
-  self.boneGraph.boneToDirty[self] = nil
+      for child in pairs(self.childSet) do
+        child:setTransformDirty(true)
+      end
+
+      self:setPreviousTransformDirty(true)
+    else
+      self.transform:reset()
+
+      if self.parent then
+        self.parent:setTransformDirty(false)
+        self.transform:apply(self.parent.transform)
+      end
+
+      self.transform:apply(self.localTransform)
+
+      self.transformDirty = false
+      self.boneGraph.transformDirtySet[self] = nil
+    end
+  end
+end
+
+function M:setPreviousTransformDirty(dirty)
+  assert(type(dirty) == "boolean")
+
+  if dirty ~= self.previousTransformDirty then
+    if dirty then
+      self.previousTransformDirty = true
+      self.boneGraph.previousTransformDirtySet[self] = true
+    else
+      self:setTransformDirty(false)
+
+      self.previousTransform:reset():apply(self.transform)
+      self.interpolatedTransform:reset():apply(self.transform)
+
+      self.previousTransformDirty = false
+      self.boneGraph.previousTransformDirtySet[self] = nil
+    end
+  end
 end
 
 return M

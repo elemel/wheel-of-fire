@@ -47,7 +47,7 @@ function M:init(engine, hamsterWheel, config)
   local image = self.engine.resources.images.hamster
 
   self.sprite = Sprite.new(
-    self.engine, image, self.spriteBone.interpolatedLocalToWorld)
+    self.engine, image, self.spriteBone.interpolatedTransform)
 
   self:resetSpriteBone()
 
@@ -101,8 +101,8 @@ function M:fixedUpdateAnimation(dt)
   local x, y = self.body:getPosition()
   local angle = self.body:getAngle()
 
-  self.bone.localToParent:setTransformation(x, y, angle)
-  self.bone:setDirty(true)
+  self.bone.localTransform:setTransformation(x, y, angle)
+  self.bone:setTransformDirty(true)
 end
 
 function M:createWheelJoint()
@@ -135,11 +135,11 @@ function M:resetSpriteBone()
   local originX = 0.5 * width
   local originY = 0.5 * height
 
-  self.spriteBone.localToParent:setTransformation(
+  self.spriteBone.localTransform:setTransformation(
     0, 0, 0, scaleX, scaleY, originX, originY)
 
-  self.spriteBone:setDirty(true)
-  self.spriteBone:setPreviousDirty(false)
+  self.spriteBone:setTransformDirty(true)
+  self.spriteBone:setPreviousTransformDirty(false)
 end
 
 return M
